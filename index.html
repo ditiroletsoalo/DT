@@ -286,11 +286,11 @@ const lyrics = {
 let lastLyricTime = -1;
 
 bgMusic.ontimeupdate = () => {
-    if (bgMusic.currentTime >= 205) {
+    if (bgMusic.currentTime >= 209) {
         bgMusic.pause();
         lyricsContainer.innerHTML = '';
     }
-    const lookAheadTime = Math.floor(bgMusic.currentTime + 0.7);
+    const lookAheadTime = Math.floor(bgMusic.currentTime + 0.4);
     if (lyrics[lookAheadTime] && lookAheadTime !== lastLyricTime) {
         lastLyricTime = lookAheadTime;
         lyricsContainer.innerHTML = `<div class="lyric-text">${lyrics[lookAheadTime]}</div>`;
