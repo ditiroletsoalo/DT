@@ -32,7 +32,7 @@ body {
     width: 95%;
     text-align: center;
     position: relative;
-    overflow: visible; /* Allows the Yes button to grow outside the card */
+    overflow: visible; 
 }
 
 h1 {
@@ -43,7 +43,7 @@ h1 {
 
 /* Slower orientation transitions */
 .section {
-    transition: opacity 1.5s ease-in-out, transform 1.5s ease-in-out;
+    transition: opacity 3s ease-in-out, transform 3s ease-in-out;
     opacity: 1;
 }
 
@@ -68,7 +68,7 @@ h1 {
     margin-top: 30px;
     min-height: 120px;
     width: 100%;
-    position: relative; /* Base for centering Yes */
+    position: relative; 
 }
 
 button {
@@ -93,7 +93,7 @@ button {
     background-color: #adb5bd;
     color: white;
     position: relative;
-    z-index: 99999; /* Stays above everything */
+    z-index: 99999; 
 }
 
 video {
@@ -139,7 +139,9 @@ video {
     <div id="messageSection" class="section hidden">
         <h1>I knew you'd say yes 🥰</h1>
         <h1>You make my world brighter,<br>my days softer,<br>and my heart fuller. ❤️</h1>
-        <button id="startVideoBtn" style="background:#ff4d6d;color:white;margin-top:20px;">Watch Our Memories 🎬</button>
+        <button id="startVideoBtn" style="background:#ff4d6d;color:white;margin-top:20px;font-size:1.2rem;padding:15px 35px;border-radius:50px;">
+            Watch Our Memories 🎬
+        </button>
     </div>
 
     <div id="videoContainer" class="section hidden">
@@ -150,7 +152,11 @@ video {
 
     <div id="imageSection" class="section hidden">
         <img src="vday.jpg" id="finalImageCard">
-        <h1>I'll see you on the 14th ❤️<br><br>I love you more than words can say!</h1>
+        <h1>
+            I can't wait to see you on the 14th ❤️<br><br>
+            Thank you for loving me the way you do.<br>
+            I promise to keep choosing you, every single day.
+        </h1>
     </div>
 
     <p class="footer">From Ditiro Letsoalo 💌</p>
@@ -173,14 +179,14 @@ const bgMusic = document.getElementById('bgMusic');
 let yesScale = 1;
 let firstEscape = true;
 
-// Logic for centering the Yes button and moving the No button safely
+// Playful No button logic
 noBtn.addEventListener('mouseover', () => {
     if (firstEscape) {
-        // Find current vertical position so it doesn't jump up or down
+        // Lock vertical position and center horizontally
         const rect = yesBtn.getBoundingClientRect();
         yesBtn.style.position = 'fixed';
-        yesBtn.style.top = rect.top + 'px'; // Locks vertical position
-        yesBtn.style.left = '50%'; // Centers horizontally
+        yesBtn.style.top = rect.top + 'px'; 
+        yesBtn.style.left = '50%'; 
         yesBtn.style.transform = 'translateX(-50%) scale(1.2)';
         yesScale = 1.2;
         firstEscape = false;
@@ -189,12 +195,11 @@ noBtn.addEventListener('mouseover', () => {
         yesBtn.style.transform = `translateX(-50%) scale(${yesScale})`;
     }
 
-    // STAY ON SCREEN LOGIC
-    const margin = 100; // Keeps button 100px away from edges
+    // STAY ON SCREEN LOGIC (Clamping)
+    const margin = 100; 
     const maxX = window.innerWidth - noBtn.offsetWidth - margin;
     const maxY = window.innerHeight - noBtn.offsetHeight - margin;
     
-    // Clamp coordinates so it never leaves the viewport
     const x = Math.max(margin, Math.random() * maxX);
     const y = Math.max(margin, Math.random() * maxY);
     
@@ -203,6 +208,7 @@ noBtn.addEventListener('mouseover', () => {
     noBtn.style.top = y + 'px';
 });
 
+// Create hearts for animation
 function createHeart(popAnywhere = true) {
     const heart = document.createElement('div');
     heart.classList.add('heart');
@@ -221,17 +227,19 @@ function createHeart(popAnywhere = true) {
     requestAnimationFrame(animate);
 }
 
-// Slowed down the switch for better orientation
+// Slow section switching function
 function slowSwitch(hide, show) {
     hide.style.opacity = '0';
     setTimeout(() => {
         hide.classList.add('hidden');
         show.classList.remove('hidden');
         show.style.opacity = '1';
-    }, 1200);
+    }, 3000);
 }
 
+// Interactions
 yesBtn.addEventListener('click', () => {
+    bgMusic.currentTime = 24; // Music starts at 24s
     bgMusic.play().catch(() => {});
     for (let i = 0; i < 30; i++) createHeart(true);
     slowSwitch(askSection, messageSection);
