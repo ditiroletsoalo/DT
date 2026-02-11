@@ -20,6 +20,30 @@ body {
     overflow: hidden;
 }
 
+/* --- LYRICS OVERLAY --- */
+#lyrics-container {
+    position: fixed;
+    top: 40px;
+    width: 100%;
+    text-align: center;
+    z-index: 100;
+    pointer-events: none;
+}
+
+.lyric-text {
+    color: #d63384;
+    font-size: 1.6rem;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+    display: inline-block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .main-wrapper {
     display: flex;
     flex-direction: column;
@@ -92,7 +116,6 @@ button {
     background-color: #adb5bd;
     color: white;
     z-index: 99999;
-    /* Added opacity to the transition list so it fades smoothly */
     transition: left 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                 top 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
                 opacity 3s ease-in-out;
@@ -129,10 +152,12 @@ video {
 
 <body>
 
+<div id="lyrics-container"></div>
+
 <div class="main-wrapper">
     <div id="askSection" class="section">
         <img src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif">
-        <h1>Mpho Mosola 💕<br>Will you be my Valentine?</h1>
+        <h1>Mpho ★ Mosola <br>Will you be my Valentine?</h1>
         <div class="buttons">
             <button id="yesBtn">Yes 💘</button>
             <button id="noBtn">No 🙈</button>
@@ -178,6 +203,69 @@ const videoContainer = document.getElementById('videoContainer');
 const imageSection = document.getElementById('imageSection');
 const video = document.getElementById('valVideo');
 const bgMusic = document.getElementById('bgMusic');
+const lyricsContainer = document.getElementById('lyrics-container');
+
+const lyrics = {
+    36: "I'm so sure this love is for real",
+    42: "You can see the way that I feel",
+    47: "There's not a day that passes me by",
+    52: "That I don't dream of having you by my side",
+    58: "Like the moon and the stars",
+    61: "May our hearts never part",
+    64: "As times passes by",
+    67: "Forever be mine",
+    69: "You pick me up when I'm down",
+    76: "Life has no meaning when you're not around",
+    82: "You pick me up when I'm down",
+    88: "Life has no meaning when you're not around",
+    94: "When you're not around",
+    99: "Special you are, my shining star",
+    104: "You are one of a kind",
+    109: "You understand me and my every need",
+    114: "You're my friend, lover, there'll be no other",
+    122: "Like the moon and the stars",
+    125: "May our hearts never part",
+    128: "As times passes by",
+    131: "Forever be mine",
+    133: "You pick me up when I'm down",
+    139: "Life has no meaning when you're not around",
+    145: "You pick me up when I'm down",
+    151: "Life has no meaning when you're not around",
+    157: "When you're not around",
+    182: "Like the moon and the stars",
+    185: "May our hearts never part",
+    188: "As times passes by",
+    191: "Forever be mine",
+    194: "Like the moon and the stars",
+    197: "May our hearts never part",
+    200: "As times passes by",
+    203: "Forever be mine"
+};
+
+let lastLyricTime = -1;
+
+bgMusic.ontimeupdate = () => {
+    // 1. Check if we reached 205 seconds to stop the song
+    if (bgMusic.currentTime >= 205) {
+        bgMusic.pause();
+        bgMusic.currentTime = 0; // Reset or leave as is
+        lyricsContainer.innerHTML = '';
+        return;
+    }
+
+    // 2. Look 0.7 seconds ahead for lyrics
+    const lookAheadTime = Math.floor(bgMusic.currentTime + 0.4);
+    
+    if (lyrics[lookAheadTime] && lookAheadTime !== lastLyricTime) {
+        lastLyricTime = lookAheadTime;
+        lyricsContainer.innerHTML = `<div class="lyric-text">${lyrics[lookAheadTime]}</div>`;
+    }
+    
+    // Clear text during long gaps (like instrumental breaks)
+    if (bgMusic.currentTime > lastLyricTime + 8 && lastLyricTime !== -1) {
+        lyricsContainer.innerHTML = '';
+    }
+};
 
 let yesScale = 1;
 let movedToBody = false;
@@ -212,7 +300,6 @@ noBtn.addEventListener('mouseover', () => {
     } while (distance < 20 && attempts < 100);
 
     currentPos = nextPos;
-    
     noBtn.style.left = nextPos.x + '%';
     noBtn.style.top = nextPos.y + '%';
     noBtn.style.transform = 'translate(-50%, -50%)'; 
@@ -237,24 +324,18 @@ function createHeart(popAnywhere = true) {
 }
 
 function slowSwitch(hide, show) {
-    // Start fading the section
     hide.style.opacity = '0';
     hide.style.transform = 'scale(0.95)';
-    
-    // Explicitly fade the No button at the same time
     if (noBtn) {
         noBtn.style.opacity = '0';
-        noBtn.style.pointerEvents = 'none'; // Prevent it from jumping while it's fading
+        noBtn.style.pointerEvents = 'none';
     }
-    
     setTimeout(() => {
         hide.classList.add('hidden');
         if (noBtn) noBtn.style.display = 'none'; 
-        
         show.classList.remove('hidden');
         show.style.opacity = '0';
         show.style.transform = 'scale(0.95)';
-        
         setTimeout(() => {
             show.style.opacity = '1';
             show.style.transform = 'scale(1)';
