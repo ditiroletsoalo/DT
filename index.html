@@ -32,7 +32,7 @@ body {
     width: 95%;
     text-align: center;
     position: relative;
-    overflow: visible; 
+    min-height: 400px; 
 }
 
 h1 {
@@ -41,10 +41,11 @@ h1 {
     line-height: 1.5;
 }
 
-/* Slower orientation transitions */
 .section {
     transition: opacity 3s ease-in-out, transform 3s ease-in-out;
     opacity: 1;
+    transform: scale(1);
+    width: 100%;
 }
 
 .section.hidden {
@@ -67,8 +68,6 @@ h1 {
     gap: 20px;
     margin-top: 30px;
     min-height: 120px;
-    width: 100%;
-    position: relative; 
 }
 
 button {
@@ -78,29 +77,33 @@ button {
     border-radius: 50px;
     cursor: pointer;
     font-weight: bold;
-    transition: transform 0.2s ease-out;
 }
 
 #yesBtn {
     background-color: #ff4d6d;
     color: white;
     box-shadow: 0 6px 20px rgba(255, 77, 109, 0.4);
+    transition: transform 0.2s ease-out;
     position: relative;
-    z-index: 1000;
+    z-index: 10;
 }
 
 #noBtn {
     background-color: #adb5bd;
     color: white;
-    position: relative;
-    z-index: 99999; 
+    z-index: 99999;
+    /* Added opacity to the transition list so it fades smoothly */
+    transition: left 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                top 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                opacity 3s ease-in-out;
 }
 
 video {
     width: 100%;
-    max-height: 65vh;
+    max-height: 60vh;
     border-radius: 25px;
     margin-top: 15px;
+    background: #000;
 }
 
 #finalImageCard {
@@ -177,38 +180,44 @@ const video = document.getElementById('valVideo');
 const bgMusic = document.getElementById('bgMusic');
 
 let yesScale = 1;
-let firstEscape = true;
+let movedToBody = false;
 
-// Playful No button logic
+const positions = [];
+for (let i = 0; i < 500; i++) {
+    positions.push({
+        x: Math.floor(Math.random() * 86) + 7, 
+        y: Math.floor(Math.random() * 86) + 7
+    });
+}
+
+let currentPos = {x: 50, y: 50};
+
 noBtn.addEventListener('mouseover', () => {
-    if (firstEscape) {
-        // Lock vertical position and center horizontally
-        const rect = yesBtn.getBoundingClientRect();
-        yesBtn.style.position = 'fixed';
-        yesBtn.style.top = rect.top + 'px'; 
-        yesBtn.style.left = '50%'; 
-        yesBtn.style.transform = 'translateX(-50%) scale(1.2)';
-        yesScale = 1.2;
-        firstEscape = false;
-    } else {
-        yesScale += 0.4;
-        yesBtn.style.transform = `translateX(-50%) scale(${yesScale})`;
+    yesScale += 0.3;
+    yesBtn.style.transform = `scale(${yesScale})`;
+
+    if (!movedToBody) {
+        document.body.appendChild(noBtn);
+        noBtn.style.position = 'fixed';
+        movedToBody = true;
     }
 
-    // STAY ON SCREEN LOGIC (Clamping)
-    const margin = 100; 
-    const maxX = window.innerWidth - noBtn.offsetWidth - margin;
-    const maxY = window.innerHeight - noBtn.offsetHeight - margin;
+    let nextPos;
+    let distance = 0;
+    let attempts = 0;
+    do {
+        nextPos = positions[Math.floor(Math.random() * positions.length)];
+        distance = Math.sqrt(Math.pow(nextPos.x - currentPos.x, 2) + Math.pow(nextPos.y - currentPos.y, 2));
+        attempts++;
+    } while (distance < 20 && attempts < 100);
+
+    currentPos = nextPos;
     
-    const x = Math.max(margin, Math.random() * maxX);
-    const y = Math.max(margin, Math.random() * maxY);
-    
-    noBtn.style.position = 'fixed';
-    noBtn.style.left = x + 'px';
-    noBtn.style.top = y + 'px';
+    noBtn.style.left = nextPos.x + '%';
+    noBtn.style.top = nextPos.y + '%';
+    noBtn.style.transform = 'translate(-50%, -50%)'; 
 });
 
-// Create hearts for animation
 function createHeart(popAnywhere = true) {
     const heart = document.createElement('div');
     heart.classList.add('heart');
@@ -227,19 +236,34 @@ function createHeart(popAnywhere = true) {
     requestAnimationFrame(animate);
 }
 
-// Slow section switching function
 function slowSwitch(hide, show) {
+    // Start fading the section
     hide.style.opacity = '0';
+    hide.style.transform = 'scale(0.95)';
+    
+    // Explicitly fade the No button at the same time
+    if (noBtn) {
+        noBtn.style.opacity = '0';
+        noBtn.style.pointerEvents = 'none'; // Prevent it from jumping while it's fading
+    }
+    
     setTimeout(() => {
         hide.classList.add('hidden');
+        if (noBtn) noBtn.style.display = 'none'; 
+        
         show.classList.remove('hidden');
-        show.style.opacity = '1';
-    }, 3000);
+        show.style.opacity = '0';
+        show.style.transform = 'scale(0.95)';
+        
+        setTimeout(() => {
+            show.style.opacity = '1';
+            show.style.transform = 'scale(1)';
+        }, 50); 
+    }, 3000); 
 }
 
-// Interactions
 yesBtn.addEventListener('click', () => {
-    bgMusic.currentTime = 24; // Music starts at 24s
+    bgMusic.currentTime = 24; 
     bgMusic.play().catch(() => {});
     for (let i = 0; i < 30; i++) createHeart(true);
     slowSwitch(askSection, messageSection);
@@ -247,7 +271,9 @@ yesBtn.addEventListener('click', () => {
 
 document.getElementById('startVideoBtn').addEventListener('click', () => {
     slowSwitch(messageSection, videoContainer);
-    setTimeout(() => { video.play(); }, 1200);
+    setTimeout(() => { 
+        video.play(); 
+    }, 4500); 
 });
 
 video.onended = function() {
